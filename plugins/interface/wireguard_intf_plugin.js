@@ -238,7 +238,10 @@ class WireguardInterfacePlugin extends InterfaceBasePlugin {
         return null;
       })
       if (pubKey) {
-        this._automata = new WireguardMeshAutomata(this.name, pubKey, this.networkConfig);
+        this._automata = new WireguardMeshAutomata(this.name, pubKey, this.networkConfig, {
+          wgCmd: this.wgCmd,
+          wireguardType: this.wireguardType,
+        });
         this._automata.start();
       }
     }
@@ -339,7 +342,7 @@ const T1 = 180;
 const T2 = 225;
 
 class WireguardMeshAutomata {
-  constructor(intf, pubKey, config) {
+  constructor(intf, pubKey, config, options = {}) {
     // config should be the network config of the intf
     this.intf = intf;
     this.pubKey = pubKey;
@@ -348,8 +351,8 @@ class WireguardMeshAutomata {
     this.effectiveAllowedIPs = {};
     this.dnsCache = new LRU({ maxAge: 300 * 1000 });
     this.domainZoneCache = new LRU({ maxAge: 3600 * 1000 });
-    this.wireguardType = "wireguard";
-    this.wgCmd = "wg";
+    this.wireguardType = options.wireguardType || "wireguard";
+    this.wgCmd = options.wgCmd || "wg";
     const ipv4 = this.config.ipv4;
     const cidr = new Address4(ipv4);
     for (const peer of this.config.peers) {
